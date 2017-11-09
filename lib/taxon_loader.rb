@@ -15,8 +15,8 @@ module TaxonLoader
     def clean_record(rec) # this should go to CatalogueOfLife
       rec.delete_if { |_k, v| v.kind_of?(String) && v.empty? }
       name = rec['infraspecies'] || rec['species'] || rec['name']
-      extct = rec['is_extinct'] == 'true' ? "\x01" : "\x00" # Sequel should accept true/false
-      accepted = rec['name_status'] == 'accepted name' ? "\x01" : "\x00" # Sequel should accept true/false
+      extct = rec['is_extinct'] == 'true' ? true : false # Sequel should accept true/false
+      accepted = rec['name_status'] == 'accepted name' ? true : false # Sequel should accept true/false
       rank = rec['rank'] == 'Infraspecies' ? 'Subspecies' : rec['rank']
       colloqial = nil
       if rec['common_names']
@@ -55,6 +55,7 @@ module TaxonLoader
       crnt_col['child_taxa'].each do |c|
         ctx = @service.full_record_for(id: c['id']).first
         txn_data = clean_record ctx
+        next if txn_data[:is_extinct] == true
         nw_txn = sp_txn.add_child(
           TimestampCreated: DateTime.now,
           CreatedByAgentID: @target.agent.AgentID,
@@ -65,7 +66,7 @@ module TaxonLoader
           FullName: txn_data[:full_name],
           Author: txn_data[:author],
           IsAccepted: txn_data[:is_accepted],
-          IsHybrid: "\00",
+          IsHybrid: false,
           Source: 'Catalogue Of Life 2017',
           TaxonomicSerialNumber: txn_data[:tx_sr_number],
           GUID: SecureRandom.uuid,

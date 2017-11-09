@@ -26,7 +26,7 @@ class CatalogueOfLife
   # <tt>lookup_name('Crustacea', !'Species')</tt>
   # will return any matches for Crustacea that are not species
   # *rank* can alternatively be prefixed with *<*, *<=*, *>*, or *>=*;
-  def full_record_for(id: nil, name: nil, rank: nil)
+  def full_record_for(id: nil, name: nil, rank: nil, extinct: nil)
     response = @conn.get do |req|
       req.url 'col/webservice?'
       req.params['format'] = @format.to_s
@@ -34,6 +34,7 @@ class CatalogueOfLife
       req.params['id'] = id if id
       req.params['name'] = name if name
       req.params['rank'] = rank if rank
+      req.params['extinct'] = extinct if extinct
     end
     response.body['results']
   end
