@@ -6,9 +6,9 @@ module TaxonLoader
 
     def initialize(config)
       collection = Specify::Collection[CollectionName: config['collection']]
-      @agent = Specify::Agent.where(division: collection.discipline.division,
+      @agent = Specify::Agent.first(division: collection.discipline.division,
                                     user: Specify::User[Name: config['spuser']]
-                                   ).first
+                                   )
       @taxonomy = collection.discipline.taxonomy
     end
   end

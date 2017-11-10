@@ -7,9 +7,9 @@ module TaxonLoader
       @target = target
       @service = CatalogueOfLife.new
       rank = @target.taxonomy.ranks_dataset[Name: root_rank]
-      @root_taxon = @target.taxonomy.taxa_dataset.where(rank: rank,
+      @root_taxon = @target.taxonomy.taxa_dataset.first(rank: rank,
                                                         Name: root_name
-                                                        ).first
+                                                        )
       @col_start_taxon = @service.full_record_for(name: root_name,
                                                   rank: root_rank).first
     end
