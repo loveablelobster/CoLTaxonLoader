@@ -4,12 +4,12 @@ module TaxonLoader
   class Target
     attr_reader :agent, :taxonomy
 
-    def initialize(config)
-      collection = Specify::Collection[CollectionName: config['collection']]
-      @agent = Specify::Agent.first(division: collection.discipline.division,
-                                    user: Specify::User[Name: config['spuser']]
+    def initialize(config, discipline, specifyuser)
+      discipline = Specify::Discipline[Name: discipline]
+      @agent = Specify::Agent.first(division: discipline.division,
+                                    user: Specify::User[Name: specifyuser]
                                    )
-      @taxonomy = collection.discipline.taxonomy
+      @taxonomy = discipline.taxonomy
     end
   end
 end
