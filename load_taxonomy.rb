@@ -27,8 +27,24 @@ require 'mysql2'
 require 'psych'
 require 'sequel'
 
+params = {}
 
-config = Psych.load_file('../dbconfig_sandbox.yml')
+rank_rx = /^(su(b|per)|infra|parva)?(phylum|class|order|family|genus|species)$/i
+
+ARGV.each do |arg|
+  case arg
+  when rank_rx
+    params[:rank] = arg
+  when /.yml$/
+    params[:config] = arg
+  else
+    params[:name] = arg
+  end
+end
+
+p params
+
+config = Psych.load_file(params[:config])
 
 DB = Sequel.connect(adapter: config['adapter'],
                     host: config['host'],
@@ -43,15 +59,13 @@ require_relative 'lib/target'
 require_relative 'lib/taxon_loader'
 
 target = TaxonLoader::Target.new(config)
-loader = TaxonLoader::TaxonLoader.new(target, 'Reptilia', 'Class')
+loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank])
 
 s = Stopwatch.new
 
-# DO STUFF HERE
-root = loader.service.full_record_for(name: 'Reptilia').first
+# root = loader.service.full_record_for(name: params[:name], rank: params[:rank]).first
 
-loader.exhaustive_downstream_grab(root)
-# -------------
+loader.exhaustive_downstream_grab
 
 puts s.elapsed_time
 

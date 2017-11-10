@@ -10,6 +10,8 @@ module TaxonLoader
       @root_taxon = @target.taxonomy.taxa_dataset.where(rank: rank,
                                                         Name: root_name
                                                         ).first
+      @col_start_taxon = @service.full_record_for(name: root_name,
+                                                  rank: root_rank).first
     end
 
     def clean_record(rec) # this should go to CatalogueOfLife
@@ -51,7 +53,7 @@ module TaxonLoader
       }
     end
 
-    def exhaustive_downstream_grab(crnt_col, sp_txn = @root_taxon)
+    def exhaustive_downstream_grab(crnt_col = @col_start_taxon, sp_txn = @root_taxon)
       crnt_col['child_taxa'].each do |c|
         ctx = @service.full_record_for(id: c['id']).first
         txn_data = clean_record ctx
