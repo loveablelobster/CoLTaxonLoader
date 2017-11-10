@@ -42,8 +42,6 @@ ARGV.each do |arg|
   end
 end
 
-p params
-
 config = Psych.load_file(params[:config])
 
 DB = Sequel.connect(adapter: config['adapter'],
@@ -52,7 +50,6 @@ DB = Sequel.connect(adapter: config['adapter'],
                     user: config['user'],
                     password: config['password'])
 
-require_relative 'lib/catalogue_of_life'
 require_relative 'lib/specify'
 require_relative 'lib/stopwatch'
 require_relative 'lib/target'

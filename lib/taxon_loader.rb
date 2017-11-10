@@ -1,3 +1,6 @@
+require_relative 'catalogue_of_life'
+require_relative 'web_service_helper'
+
 #
 module TaxonLoader
   #
@@ -7,58 +10,19 @@ module TaxonLoader
       @target = target
       @service = CatalogueOfLife.new
       rank = @target.taxonomy.ranks_dataset[Name: root_rank]
-      @root_taxon = @target.taxonomy.taxa_dataset.first(rank: rank,
-                                                        Name: root_name
-                                                        )
+      @sp_start_taxon = @target.taxonomy.taxa_dataset.first(rank: rank,
+                                                        Name: root_name)
       @col_start_taxon = @service.full_record_for(name: root_name,
                                                   rank: root_rank).first
     end
 
-    def clean_record(rec) # this should go to CatalogueOfLife
-      rec.delete_if { |_k, v| v.kind_of?(String) && v.empty? }
-      name = rec['infraspecies'] || rec['species'] || rec['name']
-      extct = rec['is_extinct'] == 'true' ? true : false # Sequel should accept true/false
-      accepted = rec['name_status'] == 'accepted name' ? true : false # Sequel should accept true/false
-      rank = rec['rank'] == 'Infraspecies' ? 'Subspecies' : rec['rank']
-      colloqial = nil
-      if rec['common_names']
-        colloqial = rec['common_names'].map do |cn|
-          lang = case cn['language']
-          when 'English'
-            'en'
-          when 'Danish'
-            'da'
-          when 'French'
-            'fr'
-          when 'Portuguese'
-            'pt'
-          when 'Spanish'
-            'es'
-          else
-            nil
-          end
-          { name: cn['name'], lang: lang }
-        end
-      end
-      {
-        tx_sr_number: rec['id'],
-        name: name,
-        full_name: rec['name'],
-        author: rec['author'],
-        rank: @target.taxonomy.rank(rank),
-        col_status: rec['name_status'],
-        colloqial: colloqial,
-        is_accepted: accepted,
-        is_extinct: extct
-      }
-    end
-
-    def exhaustive_downstream_grab(crnt_col = @col_start_taxon, sp_txn = @root_taxon)
+    def exhaustive_downstream_grab(crnt_col = @col_start_taxon, sp_txn = @sp_start_taxon)
       crnt_col['child_taxa'].each do |c|
         ctx = @service.full_record_for(id: c['id']).first
-        txn_data = clean_record ctx
+        txn_data = WebServiceHelper::clean_record(ctx)
+        txn_data[:rank] = @target.taxonomy.rank(txn_data[:rank])
         next if txn_data[:is_extinct] == true
-        nw_txn = sp_txn.add_child(
+        nw_txn = sp_txn.children_dataset.first(Name: txn_data[:name], RankID: txn_data[:rank].RankID) || sp_txn.add_child(
           TimestampCreated: DateTime.now,
           CreatedByAgentID: @target.agent.AgentID,
           TimestampModified: DateTime.now,
@@ -72,13 +36,13 @@ module TaxonLoader
           Source: 'Catalogue Of Life 2017',
           TaxonomicSerialNumber: txn_data[:tx_sr_number],
           GUID: SecureRandom.uuid,
-          parent: sp_txn,
           RankID: txn_data[:rank].RankID,
           rank: txn_data[:rank],
           taxonomy: @target.taxonomy
         )
         if txn_data[:colloqial]
           txn_data[:colloqial].each do |cn|
+            next if nw_txn.common_names_dataset.first(Language: cn[:lang], Name: cn[:name])
             nw_txn.add_common_name(
               TimestampCreated: DateTime.now,
               CreatedByAgentID: @target.agent.AgentID,
