@@ -80,5 +80,7 @@ loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank])
 s = Stopwatch.new
 
 loader.exhaustive_downstream_grab
-
+puts '--------------------------------------------------------------------------------'
+puts 'Number of newly inserted taxa:'
+loader.new_taxon_count.each { |k, v| puts "#{k}: #{v}" if v >= 1 }
 puts s.elapsed_time
