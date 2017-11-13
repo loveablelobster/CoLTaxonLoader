@@ -8,38 +8,67 @@ ROOTRANK: root of the taxon for which to search the api
 
 -h, --help:
   show help
+-a, --adapter
+  the adapter for the database connection (eg `mysql2` for MySQL or MariaDB)
+-c, --connection
+  MYSQLUSER@HOST
 -d, --discipline
-  the name of the discipline using the taxonomy to which the taxa are to be imported
--s, --specifyuser
-  the name of the specify user account from which the taxa will be imported
+  the name of the discipline using the taxonomy
+  into which the taxa are to be imported
+-f, --configfile
+  a config file in YAML format with the following structure:
+  `adapter: ADAPTER`
+  `host: HOSTNAME`
+  `dbuser: MYSQLUSER`
+  `password: DATABASEPASSWORD`
+  `database: DATABASENAME`
+  `specifyuser: SPECIFYUSERNAME`
+  `discipline: DISCIPLINENAME`
+  The explicit -f option is not necessary, as YAML files will be recognized
+-p, --password
+  the password for the MySQL connection
+-s, --specify
+  SPECIFYUSER@DATABASENAME
+  the name of the specify database
+  and the user account from which the taxa will be imported
   this is required for the CreatedBy and ModifiedBy attributes of every record
 EOF
 
 require 'getoptlong'
 require 'io/console'
+require 'psych'
 
-discipline, specifyuser = nil
+config = {}
 
 opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
+                      ['--adapter', '-a', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--configfile', '-f', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--connection', '-c', GetoptLong::REQUIRED_ARGUMENT],
                       ['--discipline', '-d', GetoptLong::REQUIRED_ARGUMENT],
-                      ['--specifyuser', '-s', GetoptLong::REQUIRED_ARGUMENT])
-                 .each do |opt, arg|
+                      ['--password', '-p', GetoptLong::OPTIONAL_ARGUMENT],
+                      ['--specify', '-s', GetoptLong::REQUIRED_ARGUMENT])
+
+opts.each do |opt, arg|
   case opt
   when '--help'
     puts usage
+  when '--adapter'
+    config['adapter'] = arg
+  when '--configfile'
+    config = Psych.load_file(arg) # should merge with any paramas given
+  when '--connection'
+    config['dbuser'], config['host'] = *arg.split('@')
   when '--discipline'
-    discipline = arg
-  when '--specifyuser'
-    specifyuser = arg
+    config['discipline'] = arg
+  when '--password'
+    config['password'] = arg unless arg.empty?
+  when '--specify'
+    config['specifyuser'], config['database'] = *arg.split('@')
   else
     puts 'invalid arguments'
     exit 0
   end
 end
-
-require 'mysql2'
-require 'psych'
-require 'sequel'
 
 params = {}
 
@@ -50,48 +79,36 @@ ARGV.each do |arg|
   when rank_rx
     params[:rank] = arg
   when /.yml$/
-    params[:config] = arg
+    config = Psych.load_file(arg)
   else
     params[:name] = arg
   end
 end
 
-config = Psych.load_file(params[:config])
-
-DB = Sequel.connect(adapter: config['adapter'],
-                    host: config['host'],
-                    database: config['database'],
-                    user: config['user'],
-                    password: config['password'])
-
-prompt = Proc.new do |text|
+prompt = Proc.new do |text, secure = false|
   print text
-  STDIN.gets.chomp
+  input = secure ? STDIN.noecho(&:gets).chomp : STDIN.gets.chomp
+  puts if secure
+  input
 end
-# unless password
-#   print "password for #{dbuser}@#{host}: "
-#   password = STDIN.noecho(&:gets).chomp
-#   puts
-# end
 
-require_relative 'lib/specify'
 require_relative 'lib/stopwatch'
 require_relative 'lib/target'
 require_relative 'lib/taxon_loader'
 
-d = discipline || prompt.call('Name of the discipline using the taxonomy into which to import: ')
-s = specifyuser || prompt.call('Name of the specify user account from which the taxa will be imported: ')
+config['host'] ||= prompt.call('Name of the host to connect to: ')
+config['dbuser'] ||= prompt.call("Name of the MySQL user on #{config['host']}: ")
+config['password'] ||= prompt.call("Password for #{config['dbuser']} on #{config['host']}: ", secure = true)
+config['database'] ||= prompt.call('Name of the Specify database to use: ')
+config['specifyuser'] ||= prompt.call('Name of the Specify user account from which the taxa will be imported: ')
+config['discipline'] ||= prompt.call('Name of the discipline using the taxonomy into which to import: ')
 
-target = TaxonLoader::Target.new(config, d, s)
+target = TaxonLoader::Target.new(config)
 
 loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank])
 
 s = Stopwatch.new
 
-# root = loader.service.full_record_for(name: params[:name], rank: params[:rank]).first
-
 loader.exhaustive_downstream_grab
 
 puts s.elapsed_time
-
-
