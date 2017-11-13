@@ -1,5 +1,5 @@
 usage = <<-EOF
-Usage: load_taxonomy [DBCONFIG] [ROOTNAME] [ROOTRANK] [--] [arguments]
+Usage: load_taxonomy [ROOTNAME] [ROOTRANK] [--] [arguments]
 
 DBCONFIG: YAML file with the database connection
 
@@ -25,6 +25,7 @@ ROOTRANK: root of the taxon for which to search the api
   `specifyuser: SPECIFYUSERNAME`
   `discipline: DISCIPLINENAME`
   The explicit -f option is not necessary, as YAML files will be recognized
+  Any arguments given on command line will override settings in the config file
 -p, --password
   the password for the MySQL connection
 -s, --specify
@@ -37,7 +38,11 @@ EOF
 require 'getoptlong'
 require 'io/console'
 require 'psych'
+require_relative 'lib/target'
+require_relative 'lib/taxon_loader'
+require_relative 'lib/stopwatch'
 
+conf_file = nil
 config = {}
 
 opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
@@ -53,17 +58,17 @@ opts.each do |opt, arg|
   when '--help'
     puts usage
   when '--adapter'
-    config['adapter'] = arg
+    config[:adapter] = arg
   when '--configfile'
-    config = Psych.load_file(arg) # should merge with any paramas given
+    conf_file = Psych.load_file(arg) # should merge with any paramas given
   when '--connection'
-    config['dbuser'], config['host'] = *arg.split('@')
+    config[:dbuser], config[:host] = *arg.split('@')
   when '--discipline'
-    config['discipline'] = arg
+    config[:discipline] = arg
   when '--password'
-    config['password'] = arg unless arg.empty?
+    config[:password] = arg unless arg.empty?
   when '--specify'
-    config['specifyuser'], config['database'] = *arg.split('@')
+    config[:specifyuser], config[:database] = *arg.split('@')
   else
     puts 'invalid arguments'
     exit 0
@@ -79,12 +84,16 @@ ARGV.each do |arg|
   when rank_rx
     params[:rank] = arg
   when /.yml$/
-    config = Psych.load_file(arg)
+    conf_file = Psych.load_file(arg)
   else
     params[:name] = arg
   end
 end
 
+# merge config from file with any given command line args (args ovveride file)
+conf_file&.each { |k, v| config[k.to_sym] ||= v }
+
+# if still missing config items, prompt user
 prompt = Proc.new do |text, secure = false|
   print text
   input = secure ? STDIN.noecho(&:gets).chomp : STDIN.gets.chomp
@@ -92,16 +101,12 @@ prompt = Proc.new do |text, secure = false|
   input
 end
 
-require_relative 'lib/stopwatch'
-require_relative 'lib/target'
-require_relative 'lib/taxon_loader'
-
-config['host'] ||= prompt.call('Name of the host to connect to: ')
-config['dbuser'] ||= prompt.call("Name of the MySQL user on #{config['host']}: ")
-config['password'] ||= prompt.call("Password for #{config['dbuser']} on #{config['host']}: ", secure = true)
-config['database'] ||= prompt.call('Name of the Specify database to use: ')
-config['specifyuser'] ||= prompt.call('Name of the Specify user account from which the taxa will be imported: ')
-config['discipline'] ||= prompt.call('Name of the discipline using the taxonomy into which to import: ')
+config[:host] ||= prompt.call('Name of the host to connect to: ')
+config[:dbuser] ||= prompt.call("Name of the MySQL user on #{config[:host]}: ")
+config[:password] ||= prompt.call("Password for #{config[:dbuser]} on #{config[:host]}: ", secure = true)
+config[:database] ||= prompt.call('Name of the Specify database to use: ')
+config[:specifyuser] ||= prompt.call('Name of the Specify user account from which the taxa will be imported: ')
+config[:discipline] ||= prompt.call('Name of the discipline using the taxonomy into which to import: ')
 
 target = TaxonLoader::Target.new(config)
 

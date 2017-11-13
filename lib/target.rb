@@ -23,11 +23,11 @@ module TaxonLoader
     attr_reader :agent, :taxonomy
 
     def initialize(config)
-      Database.instance.connect(config['host'], config['dbuser'], config['database'], config['password'])
+      Database.instance.connect(config[:host], config[:dbuser], config[:database], config[:password])
 
-      discipline = Specify::Discipline[Name: config['discipline']]
+      discipline = Specify::Discipline[Name: config[:discipline]]
       @agent = Specify::Agent.first(division: discipline.division,
-                                    user: Specify::User[Name: config['specifyuser']]
+                                    user: Specify::User[Name: config[:specifyuser]]
                                    )
       @taxonomy = discipline.taxonomy
     end
