@@ -1,40 +1,3 @@
-usage = <<-EOF
-Usage: load_taxonomy [ROOTNAME] [ROOTRANK] [--] [arguments]
-
-DBCONFIG: YAML file with the database connection
-
-ROOTNAME: name of the taxon for which to search the api
-ROOTRANK: root of the taxon for which to search the api
-
--h, --help:
-  show help
--a, --adapter
-  the adapter for the database connection (eg `mysql2` for MySQL or MariaDB)
--c, --connection
-  MYSQLUSER@HOST
--d, --discipline
-  the name of the discipline using the taxonomy
-  into which the taxa are to be imported
--f, --configfile
-  a config file in YAML format with the following structure:
-  `adapter: ADAPTER`
-  `host: HOSTNAME`
-  `dbuser: MYSQLUSER`
-  `password: DATABASEPASSWORD`
-  `database: DATABASENAME`
-  `specifyuser: SPECIFYUSERNAME`
-  `discipline: DISCIPLINENAME`
-  The explicit -f option is not necessary, as YAML files will be recognized
-  Any arguments given on command line will override settings in the config file
--p, --password
-  the password for the MySQL connection
--s, --specify
-  SPECIFYUSER@DATABASENAME
-  the name of the specify database
-  and the user account from which the taxa will be imported
-  this is required for the CreatedBy and ModifiedBy attributes of every record
-EOF
-
 require 'getoptlong'
 require 'io/console'
 require 'psych'
@@ -56,7 +19,7 @@ opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
 opts.each do |opt, arg|
   case opt
   when '--help'
-    puts usage
+    File.open('usage.txt', 'r').each { |line| puts line }
   when '--adapter'
     config[:adapter] = arg
   when '--configfile'
@@ -89,6 +52,8 @@ ARGV.each do |arg|
     params[:name] = arg
   end
 end
+
+exit 0 unless params[:name] # FIXME: issue warning if there is no rank
 
 # merge config from file with any given command line args (args ovveride file)
 conf_file&.each { |k, v| config[k.to_sym] ||= v }
