@@ -14,7 +14,7 @@ module TaxonLoader
         specifyuser: 'specuser',
         discipline: 'Test Discipline'
       }
-    	TaxonLoader.new(Target.new(config), 'Trilobita', 'class', log = false)
+    	TaxonLoader.new(Target.new(config), 'Trilobita', 'class', log: false)
     end
   	context 'y' do
   		it 'z' do

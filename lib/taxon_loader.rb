@@ -7,7 +7,7 @@ module TaxonLoader
   #
   class TaxonLoader
     attr_reader :target, :service, :root_taxon, :new_taxon_count
-    def initialize(target, root_name, root_rank, log = true)
+    def initialize(target, root_name, root_rank, log: "#{Dir.pwd}/inserted_taxa.log")
       @target = target
       @service = CatalogueOfLife.new
       rank = @target.taxonomy.ranks_dataset[Name: root_rank]
@@ -21,7 +21,7 @@ module TaxonLoader
                                 .map(&:Name)
       @new_taxon_count = {}
       @available_ranks.each { |r| @new_taxon_count[r] = 0 }
-      @logger = log ? Logger.new("#{Dir.pwd}/inserted_taxa.log") : nil
+      @logger = log ? Logger.new(log) : nil
     end
 
     def exhaustive_downstream_grab(crnt_col = @col_start_taxon, sp_txn = @sp_start_taxon)
