@@ -6,8 +6,8 @@ require_relative 'web_service_helper'
 module TaxonLoader
   #
   class TaxonLoader
-    attr_reader :service, :root_taxon, :new_taxon_count
-    def initialize(target, root_name, root_rank)
+    attr_reader :target, :service, :root_taxon, :new_taxon_count
+    def initialize(target, root_name, root_rank, log = true)
       @target = target
       @service = CatalogueOfLife.new
       rank = @target.taxonomy.ranks_dataset[Name: root_rank]
@@ -21,7 +21,7 @@ module TaxonLoader
                                 .map(&:Name)
       @new_taxon_count = {}
       @available_ranks.each { |r| @new_taxon_count[r] = 0 }
-      @logger = Logger.new("#{Dir.pwd}/inserted_taxa.log")
+      @logger = log ? Logger.new("#{Dir.pwd}/inserted_taxa.log") : nil
     end
 
     def exhaustive_downstream_grab(crnt_col = @col_start_taxon, sp_txn = @sp_start_taxon)
@@ -58,7 +58,7 @@ module TaxonLoader
             taxonomy: @target.taxonomy
           )
           @new_taxon_count[txn_data[:rank]] += 1
-          @logger.info("#{nw_txn.rank[:Name]}: #{nw_txn[:Name]} (direct child of #{nw_txn.parent.rank[:Name]}: #{nw_txn.parent[:Name]})")
+          @logger&.info("#{nw_txn.rank[:Name]}: #{nw_txn[:Name]} (direct child of #{nw_txn.parent.rank[:Name]}: #{nw_txn.parent[:Name]})")
         end
         if txn_data[:colloqial]
           txn_data[:colloqial].each do |cn|
