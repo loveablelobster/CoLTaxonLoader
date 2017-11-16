@@ -1,0 +1,59 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/6e5c9a9/
+Agent	lib/models/agent.rb	4;"	c	line:4	module:Specify
+CatalogueOfLife	lib/taxon_authority_service/catalogue_of_life.rb	6;"	c	line:6	module:TaxonAuthorityService
+Collection	lib/models/collection.rb	4;"	c	line:4	module:Specify
+CommonName	lib/models/taxonomy/common_name.rb	4;"	c	line:4	module:Specify
+Database	lib/database.rb	4;"	c	line:4	module:TaxonLoader
+Discipline	lib/models/discipline.rb	4;"	c	line:4	module:Specify
+Division	lib/models/division.rb	4;"	c	line:4	module:Specify
+Rank	lib/models/taxonomy/rank.rb	4;"	c	line:4	module:Specify
+Specify	lib/models/agent.rb	2;"	m	line:2
+Specify	lib/models/collection.rb	2;"	m	line:2
+Specify	lib/models/discipline.rb	2;"	m	line:2
+Specify	lib/models/division.rb	2;"	m	line:2
+Specify	lib/models/taxonomy/common_name.rb	2;"	m	line:2
+Specify	lib/models/taxonomy/rank.rb	2;"	m	line:2
+Specify	lib/models/taxonomy/taxon.rb	2;"	m	line:2
+Specify	lib/models/taxonomy/taxonomy.rb	2;"	m	line:2
+Specify	lib/models/user.rb	2;"	m	line:2
+Stopwatch	lib/stopwatch.rb	2;"	c	line:2
+Target	lib/target.rb	12;"	c	line:12	module:TaxonLoader
+Taxon	lib/models/taxonomy/taxon.rb	4;"	c	line:4	module:Specify
+TaxonAuthority	lib/taxon_authority_service/taxon_authority_service.rb	7;"	c	line:7	module:TaxonAuthorityService
+TaxonAuthorityService	lib/taxon_authority_service/catalogue_of_life.rb	4;"	m	line:4
+TaxonAuthorityService	lib/taxon_authority_service/taxon_authority_service.rb	2;"	m	line:2
+TaxonLoader	lib/database.rb	2;"	m	line:2
+TaxonLoader	lib/target.rb	10;"	m	line:10
+TaxonLoader	lib/taxon_loader.rb	10;"	c	line:10	module:TaxonLoader
+TaxonLoader	lib/taxon_loader.rb	8;"	m	line:8
+TaxonLoader	spec/taxon_loader_spec.rb	5;"	m	line:5
+Taxonomy	lib/models/taxonomy/taxonomy.rb	4;"	c	line:4	module:Specify
+Ticker	lib/ticker.rb	4;"	c	line:4
+User	lib/models/user.rb	4;"	c	line:4	module:Specify
+WebServiceHelper	lib/taxon_authority_service/web_service_helper.rb	2;"	m	line:2
+clean_record	lib/taxon_authority_service/web_service_helper.rb	3;"	F	line:3	module:WebServiceHelper
+connect	lib/database.rb	7;"	f	line:7	class:TaxonLoader.Database
+count	lib/ticker.rb	18;"	f	line:18	class:Ticker
+elapsed_time	lib/stopwatch.rb	7;"	f	line:7	class:Stopwatch
+exhaustive_downstream_grab	lib/taxon_loader.rb	24;"	f	line:24	class:TaxonLoader.TaxonLoader
+fetch	lib/taxon_loader.rb	39;"	f	line:39	class:TaxonLoader.TaxonLoader
+full_record_for	lib/taxon_authority_service/catalogue_of_life.rb	30;"	f	line:30	class:TaxonAuthorityService.CatalogueOfLife
+indent	lib/ticker.rb	23;"	f	line:23	class:Ticker
+initialize	lib/stopwatch.rb	3;"	f	line:3	class:Stopwatch
+initialize	lib/target.rb	15;"	f	line:15	class:TaxonLoader.Target
+initialize	lib/taxon_authority_service/catalogue_of_life.rb	7;"	f	line:7	class:TaxonAuthorityService.CatalogueOfLife
+initialize	lib/taxon_authority_service/taxon_authority_service.rb	9;"	f	line:9	class:TaxonAuthorityService.TaxonAuthority
+initialize	lib/taxon_loader.rb	13;"	f	line:13	class:TaxonLoader.TaxonLoader
+initialize	lib/ticker.rb	7;"	f	line:7	class:Ticker
+insert_child	lib/target.rb	27;"	f	line:27	class:TaxonLoader.Target
+insert_common_name	lib/target.rb	46;"	f	line:46	class:TaxonLoader.Target
+load	lib/taxon_loader.rb	43;"	f	line:43	class:TaxonLoader.TaxonLoader
+print	lib/ticker.rb	29;"	f	line:29	class:Ticker
+rank	lib/models/taxonomy/taxonomy.rb	9;"	f	line:9	class:Specify.Taxonomy
+start_taxon	lib/target.rb	61;"	f	line:61	class:TaxonLoader.Target
+target_rank	lib/target.rb	67;"	f	line:67	class:TaxonLoader.Target
