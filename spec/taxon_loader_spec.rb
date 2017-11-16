@@ -21,7 +21,7 @@ module TaxonLoader
         expect(taxon_loader.db_start_taxon.parent[:Name]).to eq('Arthropoda')
   		end
   		it 'in the external service' do
-  			expect(taxon_loader.authority.start_taxon['child_taxa']).not_to be_nil
+  			expect(taxon_loader.authority.start_taxon.children?).to be_truthy
   		end
   		it 'resets the new taxon count' do
   			expect(taxon_loader.ticker.new_taxon_count).to eq({ 'Life' => 0,
