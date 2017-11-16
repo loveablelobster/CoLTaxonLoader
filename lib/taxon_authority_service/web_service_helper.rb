@@ -1,14 +1,14 @@
 #
 module WebServiceHelper
-    def self.clean_record(rec) # this should go to CatalogueOfLife
+    def self.normalize(rec) # this should go to CatalogueOfLife
       rec.delete_if { |_k, v| v.kind_of?(String) && v.empty? }
       name = rec['infraspecies'] || rec['species'] || rec['name']
       extct = rec['is_extinct'] == 'true' ? true : false
-      accepted = rec['name_status'] == 'accepted name' ? true : false
+      status = rec['name_status'] == 'accepted name' ? :accepted : rec['name_status']
       rank = rec['rank'] == 'Infraspecies' ? 'Subspecies' : rec['rank']
       colloqial = nil
       if rec['common_names']
-        colloqial = rec['common_names'].map do |cn|
+        common_names = rec['common_names'].map do |cn|
           lang = case cn['language']
           when 'English'
             'en'
@@ -27,15 +27,15 @@ module WebServiceHelper
         end
       end
       {
-        tx_sr_number: rec['id'],
+        identifier: rec['id'],
         name: name,
         full_name: rec['name'],
         author: rec['author'],
         rank: rank,
-        col_status: rec['name_status'],
-        colloqial: colloqial,
-        is_accepted: accepted,
-        is_extinct: extct
+        status: status,
+        common_names: common_names,
+        is_extinct: extct,
+        child_ids: rec['child_taxa'].map { |ctx| ctx['id'] }.uniq
       }
     end
 end

@@ -7,12 +7,14 @@ require_relative 'lib/stopwatch'
 
 conf_file = nil
 config = {}
+include_extinct = false
 
 opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
                       ['--adapter', '-a', GetoptLong::REQUIRED_ARGUMENT],
                       ['--configfile', '-f', GetoptLong::REQUIRED_ARGUMENT],
                       ['--connection', '-c', GetoptLong::REQUIRED_ARGUMENT],
                       ['--discipline', '-d', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--extinct', '-e', GetoptLong::NO_ARGUMENT],
                       ['--password', '-p', GetoptLong::OPTIONAL_ARGUMENT],
                       ['--specify', '-s', GetoptLong::REQUIRED_ARGUMENT])
 
@@ -32,6 +34,8 @@ opts.each do |opt, arg|
     config[:password] = arg unless arg.empty?
   when '--specify'
     config[:specifyuser], config[:database] = *arg.split('@')
+  when '--extinct'
+    include_extinct = true
   else
     puts 'invalid arguments'
     exit 0
@@ -75,12 +79,12 @@ config[:discipline] ||= prompt.call('Name of the discipline using the taxonomy i
 
 target = TaxonLoader::Target.new(config)
 
-loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank])
+loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank], include_extinct_taxa: include_extinct)
 
 s = Stopwatch.new
 
 loader.exhaustive_downstream_grab
 puts '--------------------------------------------------------------------------------'
 puts 'Number of newly inserted taxa:'
-loader.new_taxon_count.each { |k, v| puts "#{k}: #{v}" if v >= 1 }
+loader.ticker.new_taxon_count.each { |k, v| puts "#{k}: #{v}" if v >= 1 }
 puts s.elapsed_time
