@@ -44,7 +44,7 @@ module TaxonLoader
     end
 
     def insert_common_name(taxon, common_name_data)
-      retutrn if taxon.common_names_dataset
+      return if taxon.common_names_dataset
                       .first(Language: common_name_data[:lang],
                              Name: common_name_data[:name])
       taxon.add_common_name(
