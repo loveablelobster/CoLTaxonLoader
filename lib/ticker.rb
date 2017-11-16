@@ -27,6 +27,6 @@ class Ticker
   end
 
   def print(taxon)
-    puts "#{indent(taxon[:rank])}#{taxon[:rank]}: #{taxon[:full_name]}"
+    puts "#{indent(taxon.rank)}#{taxon.rank}: #{taxon.full_name}"
   end
 end

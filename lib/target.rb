@@ -13,34 +13,29 @@ module TaxonLoader
     attr_reader :agent, :taxonomy, :ranks
 
     def initialize(config)
-      Database.instance.connect(config[:host], config[:dbuser], config[:database], config[:password])
-
-      discipline = Specify::Discipline[Name: config[:discipline]]
-      @agent = Specify::Agent.first(division: discipline.division,
-                                    user: Specify::User[Name: config[:specifyuser]]
-                                   )
-      @taxonomy = discipline.taxonomy
-      @ranks = @taxonomy.ranks.sort { |x, y| x[:RankID] <=> y[:RankID] }
-                              .map(&:Name)
+      Database.instance.connect(config)
+      dscp = Specify::Discipline[Name: config[:discipline]]
+      default_agent(dscp.division, Specify::User[Name: config[:specifyuser]])
+      @taxonomy = dscp.taxonomy
+      available_ranks(@taxonomy.ranks)
     end
 
-    def insert_child(taxon, child_data, ticker)
-      db_rank = target_rank(child_data[:rank])
-      child = taxon.children_dataset.first(Name: child_data[:name],
-                                           rank: db_rank )
-      return child if child
-      child = taxon.add_child(
+    def insert_child(taxon, child, ticker)
+      db_rank = target_rank(child.rank)
+      db_child = taxon.children_dataset.first(Name: child.name, rank: db_rank )
+      return db_child if db_child
+      db_child = taxon.add_child(
         TimestampCreated: DateTime.now, CreatedByAgentID: @agent.AgentID,
         TimestampModified: DateTime.now, ModifiedByAgentID: @agent.AgentID,
-        Version: 0, Name: child_data[:name], FullName: child_data[:full_name],
-        Author: child_data[:author], IsAccepted: child_data[:is_accepted],
+        Version: 0, Name: child.name, FullName: child.full_name,
+        Author: child.author, IsAccepted: child.accepted?,
         IsHybrid: false, Source: 'Catalogue Of Life 2017',
-        TaxonomicSerialNumber: child_data[:tx_sr_number],
+        TaxonomicSerialNumber: child.identifier,
         GUID: SecureRandom.uuid, RankID: db_rank.RankID, rank: db_rank,
         taxonomy: @taxonomy
       )
-      ticker.count(child)
-      child
+      ticker.count(db_child)
+      db_child
     end
 
     def insert_common_name(taxon, common_name_data)
@@ -63,6 +58,14 @@ module TaxonLoader
     end
 
     private
+
+    def available_ranks(ranks)
+      @ranks = ranks.sort { |x, y| x[:RankID] <=> y[:RankID] }.map(&:Name)
+    end
+
+    def default_agent(division, user)
+      @agent = Specify::Agent.first(division: division, user: user)
+    end
 
     def target_rank(rank)
       @taxonomy.ranks_dataset[Name: rank]

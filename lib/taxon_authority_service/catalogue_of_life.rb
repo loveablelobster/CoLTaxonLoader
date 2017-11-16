@@ -27,7 +27,7 @@ module TaxonAuthorityService
     # <tt>lookup_name('Crustacea', !'Species')</tt>
     # will return any matches for Crustacea that are not species
     # *rank* can alternatively be prefixed with *<*, *<=*, *>*, or *>=*;
-    def full_record_for(id: nil, name: nil, rank: nil, extinct: nil)
+    def get(id: nil, name: nil, rank: nil, extinct: nil)
       response = @conn.get do |req|
         req.url 'col/webservice?'
         req.params['format'] = @format.to_s
@@ -38,6 +38,10 @@ module TaxonAuthorityService
         req.params['extinct'] = extinct if extinct
       end
       response.body['results']
+    end
+
+    def to_s
+      'Catalogue Of Life'
     end
   end
 end

@@ -4,6 +4,7 @@ require 'logger'
 require_relative 'taxon_authority_service/taxon_authority_service'
 TA = TaxonAuthorityService::TaxonAuthority
 require_relative 'ticker'
+
 #
 module TaxonLoader
   #
@@ -23,16 +24,15 @@ module TaxonLoader
 
     def exhaustive_downstream_grab(authority_taxon = @authority.start_taxon,
                                    db_taxon = @db_start_taxon)
-      authority_taxon['child_taxa'].each do |c|
-        ctx = @authority.service.full_record_for(id: c['id']).first
-        txn_data = WebServiceHelper.clean_record(ctx)
-        next if txn_data[:is_extinct] == true && !@include_extinct_taxa
-        @ticker.print(txn_data)
-        next_taxon = @target.insert_child(db_taxon, txn_data, @ticker)
-        txn_data[:colloqial]&.each do |cn|
+      authority_taxon.children.each do |child|
+        next if child.is_extinct && !@include_extinct_taxa
+        @ticker.print(child)
+        next_taxon = @target.insert_child(db_taxon, child, @ticker)
+
+        child.common_names&.each do |cn|
           @target.insert_common_name(next_taxon, cn)
         end
-        exhaustive_downstream_grab(ctx, next_taxon) if ctx['child_taxa']
+        exhaustive_downstream_grab(child, next_taxon) if child.children?
       end
     end
   end

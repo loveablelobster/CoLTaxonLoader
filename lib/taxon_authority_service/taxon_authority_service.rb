@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
+require_relative 'taxon'
 #
 module TaxonAuthorityService
-
-  require_relative 'web_service_helper'
 
   #
   class TaxonAuthority
@@ -9,7 +10,11 @@ module TaxonAuthorityService
     def initialize(service:, taxon:, rank: nil)
       require_relative service
       @service = TaxonAuthorityService.const_get(service.split('_').map(&:capitalize).join).new
-      @start_taxon = @service.full_record_for(name: taxon, rank: rank).first
+      @start_taxon = Taxon.new(authority: self, taxon: taxon, rank: rank)
+    end
+
+    def to_s
+      @service.to_s
     end
   end
 end

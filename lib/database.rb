@@ -4,12 +4,12 @@ module TaxonLoader
   class Database
     include Singleton
 
-    def connect(host, dbuser, database, password)
+    def connect(config)
       @db = Sequel.connect(adapter: 'mysql2',
-                           host: host,
-                           database: database,
-                           user: dbuser,
-                           password: password)
+                           host: config[:host],
+                           database: config[:database],
+                           user: config[:dbuser],
+                           password: config[:password])
       require_relative 'specify'
     end
   end
