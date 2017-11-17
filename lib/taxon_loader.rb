@@ -16,7 +16,7 @@ module TaxonLoader
       @authority = TA.new(service: 'catalogue_of_life',
                           taxon: options[:name], rank: options[:rank])
       @db_start_taxon = @target.start_taxon(options[:name], options[:rank])
-      @ticker = Ticker.new(target, options[:rank], options[:log])
+      @ticker = Ticker.new(target.ranks, options[:rank], options[:log])
       @include_extinct_taxa = options[:include_extinct]
     end
 
@@ -24,7 +24,7 @@ module TaxonLoader
                                    db_taxon = @db_start_taxon)
       authority_taxon.children.each do |child|
         next if child.is_extinct && !@include_extinct_taxa
-        @ticker.print(child)
+        @ticker.print(child.full_name, child.rank)
         next_taxon = @target.insert_child(db_taxon, child, @ticker)
 
         child.common_names&.each do |cn|
