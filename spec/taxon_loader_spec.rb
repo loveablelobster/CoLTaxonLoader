@@ -14,14 +14,20 @@ module TaxonLoader
         specifyuser: 'specuser',
         discipline: 'Test Discipline'
       }
-    	TaxonLoader.new(Target.new(config), 'Trilobita', 'class', log: false)
+      options = {
+        name: 'Trilobita',
+        rank: 'class',
+        include_extinct: true,
+        log: nil
+      }
+    	TaxonLoader.new(Target.new(config), options)
     end
   	context 'finds the starting point for the upload' do
   		it 'in the database' do
         expect(taxon_loader.db_start_taxon.parent[:Name]).to eq('Arthropoda')
   		end
   		it 'in the external service' do
-  			expect(taxon_loader.authority.start_taxon['child_taxa']).not_to be_nil
+  			expect(taxon_loader.authority.start_taxon.children?).to be_truthy
   		end
   		it 'resets the new taxon count' do
   			expect(taxon_loader.ticker.new_taxon_count).to eq({ 'Life' => 0,

@@ -11,15 +11,13 @@ module TaxonLoader
   class TaxonLoader
     attr_reader :authority, :db_start_taxon, :ticker
 
-    def initialize(target, taxon, rank,
-                   log: "#{Dir.pwd}/inserted_taxa.log",
-                   include_extinct_taxa: false)
+    def initialize(target, options)
       @target = target
       @authority = TA.new(service: 'catalogue_of_life',
-                          taxon: taxon, rank: rank)
-      @db_start_taxon = @target.start_taxon(taxon, rank)
-      @ticker = Ticker.new(target, rank, log)
-      @include_extinct_taxa = include_extinct_taxa
+                          taxon: options[:name], rank: options[:rank])
+      @db_start_taxon = @target.start_taxon(options[:name], options[:rank])
+      @ticker = Ticker.new(target, options[:rank], options[:log])
+      @include_extinct_taxa = options[:include_extinct]
     end
 
     def exhaustive_downstream_grab(authority_taxon = @authority.start_taxon,
