@@ -7,6 +7,7 @@ require_relative 'lib/stopwatch'
 
 conf_file = nil
 config = {}
+options = {}
 include_extinct = false
 
 opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
@@ -15,6 +16,7 @@ opts = GetoptLong.new(['--help', '-h', GetoptLong::NO_ARGUMENT],
                       ['--connection', '-c', GetoptLong::REQUIRED_ARGUMENT],
                       ['--discipline', '-d', GetoptLong::REQUIRED_ARGUMENT],
                       ['--extinct', '-e', GetoptLong::NO_ARGUMENT],
+                      ['--log', '-l', GetoptLong::OPTIONAL_ARGUMENT],
                       ['--password', '-p', GetoptLong::OPTIONAL_ARGUMENT],
                       ['--specify', '-s', GetoptLong::REQUIRED_ARGUMENT])
 
@@ -34,30 +36,30 @@ opts.each do |opt, arg|
     config[:password] = arg unless arg.empty?
   when '--specify'
     config[:specifyuser], config[:database] = *arg.split('@')
+  when '--log'
+    options[:log] ||= "#{Dir.pwd}/inserted_taxa.log"
   when '--extinct'
-    include_extinct = true
+    options[:include_extinct] = true
   else
     puts 'invalid arguments'
     exit 0
   end
 end
 
-params = {}
-
 rank_rx = /^(su(b|per)|infra|parva)?(phylum|class|order|family|genus|species)$/i
 
 ARGV.each do |arg|
   case arg
   when rank_rx
-    params[:rank] = arg
+    options[:rank] = arg
   when /.yml$/
     conf_file = Psych.load_file(arg)
   else
-    params[:name] = arg
+    options[:name] = arg
   end
 end
 
-exit 0 unless params[:name] # FIXME: issue warning if there is no rank
+exit 0 unless options[:name] # FIXME: issue warning if there is no rank
 
 # merge config from file with any given command line args (args ovveride file)
 conf_file&.each { |k, v| config[k.to_sym] ||= v }
@@ -79,7 +81,7 @@ config[:discipline] ||= prompt.call('Name of the discipline using the taxonomy i
 
 target = TaxonLoader::Target.new(config)
 
-loader = TaxonLoader::TaxonLoader.new(target, params[:name], params[:rank], include_extinct_taxa: include_extinct)
+loader = TaxonLoader::TaxonLoader.new(target, options)
 
 s = Stopwatch.new
 
