@@ -14,7 +14,13 @@ module TaxonLoader
         specifyuser: 'specuser',
         discipline: 'Test Discipline'
       }
-    	TaxonLoader.new(Target.new(config), 'Trilobita', 'class', log: false)
+      options = {
+        name: 'Trilobita',
+        rank: 'class',
+        include_extinct: true,
+        log: nil
+      }
+    	TaxonLoader.new(Target.new(config), options)
     end
   	context 'finds the starting point for the upload' do
   		it 'in the database' do

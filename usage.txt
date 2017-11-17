@@ -24,5 +24,8 @@ ROOTRANK: root of the taxon for which to search the api
   and the user account from which the taxa will be imported
   this is required for the CreatedBy and ModifiedBy attributes of every record
 
+-l, --log
+	with optional argument for log-file name/path
+
 -e, --extinct
 	when this flag is set, extinct taxa will be included
