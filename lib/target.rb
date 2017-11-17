@@ -34,7 +34,7 @@ module TaxonLoader
         GUID: SecureRandom.uuid, RankID: db_rank.RankID, rank: db_rank,
         taxonomy: @taxonomy
       )
-      ticker.count(db_child)
+      ticker.count(child.full_name, child.rank)
       db_child
     end
 
