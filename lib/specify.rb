@@ -1,5 +1,3 @@
-require 'securerandom'
-
 Sequel.inflections do |inflect|
   inflect.irregular 'taxon', 'taxa'
 end

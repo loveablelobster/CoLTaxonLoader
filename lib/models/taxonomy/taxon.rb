@@ -7,5 +7,9 @@ module Specify
     many_to_one :parent, key: :ParentID, class: self
     one_to_many :children, key: :ParentID, class: self
     one_to_many :common_names, key: :TaxonID
+
+    def children?
+      !children.empty?
+    end
   end
 end
