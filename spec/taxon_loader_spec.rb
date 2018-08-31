@@ -17,7 +17,7 @@ module TaxonLoader
         discipline: 'Test Discipline'
       }
       options = {
-        name: 'Olenellida',
+        name: 'Asaphida',
         rank: 'order',
         include_extinct: true,
         log: nil
